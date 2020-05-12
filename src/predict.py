@@ -14,32 +14,37 @@ model.eval()
 
 
 def evaluate(model, start_text, prediction_length, temperature=1.5):
-    previous_hidden_states = model.init_hidden_states(1, False)
-    prime_input = Variable(torch.tensor(dataset.characters2int(start_text)))
-    predicted = start_text
-
-    # Use priming string to "build up" hidden state.
-    for p in range(len(start_text) - 1):
-        _, previous_hidden_states = model(prime_input[p], previous_hidden_states)
-    inp = prime_input[-1]
-
+    predicted_alphabet = start_text
     size_prediction = prediction_length - len(start_text)
 
-    for p in range(size_prediction):
-        output, previous_hidden_states = model(inp, previous_hidden_states)
+    # Convert start_text to an array of integers.
+    start_text = Variable(torch.tensor(dataset.characters2int(start_text)))
 
-        # Sample from the network as a multinomial distribution
-        output_dist = output.data.view(-1).div(temperature).exp()
-        top_i = torch.multinomial(output_dist, 1)[0]
+    # Init hidden state with zeros.
+    previous_hidden_states = model.init_hidden_states(1, use_gpu=False)
+    # -1 because the next for loop will perform the prediction based on the last character.
+    for c in range(len(start_text) - 1):
+        _, previous_hidden_states = model(start_text[c], previous_hidden_states)
 
-        # Add predicted character to string and use as next input
-        predicted_char = dataset.int2char[top_i.item()]
-        predicted += predicted_char
-        inp = Variable(torch.tensor(dataset.characters2int(predicted_char)))
+    current_character = start_text[-1]
 
-    return predicted
+    for c in range(size_prediction):
+        output, previous_hidden_states = model(
+            current_character, previous_hidden_states
+        )
+
+        output = nn.functional.softmax(output.view(-1), dim=0).data
+        max_output_index = np.argmax(output)
+
+        predicted_char = dataset.int2char[max_output_index.item()]
+        predicted_alphabet += predicted_char
+        current_character = Variable(
+            torch.tensor(dataset.characters2int(predicted_char))
+        )
+
+    return predicted_alphabet
 
 
 with torch.no_grad():
-    prediction = evaluate(model, "a", 30)
+    prediction = evaluate(model, "a", 150)
     print("".join(prediction))
