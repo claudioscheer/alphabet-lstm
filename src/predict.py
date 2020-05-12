@@ -1,19 +1,19 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from lib.dataset import RandomDatasetLoader
+from lib.dataset import CustomDatasetLoader
 from lib.model import LSTMModel
 import numpy as np
 
 
-dataset = RandomDatasetLoader("../dataset/alphabet.txt")
+dataset = CustomDatasetLoader("../dataset/alphabet.txt")
 
 model = torch.load("../output/model.pytorch")
 model.cpu()
 model.eval()
 
 
-def evaluate(model, start_text, prediction_length, temperature=0.8):
+def evaluate(model, start_text, prediction_length, temperature=1.5):
     previous_hidden_states = model.init_hidden_states(1, False)
     prime_input = Variable(torch.tensor(dataset.characters2int(start_text)))
     predicted = start_text
@@ -41,5 +41,5 @@ def evaluate(model, start_text, prediction_length, temperature=0.8):
 
 
 with torch.no_grad():
-    prediction = evaluate(model, "rstuv", 30)
+    prediction = evaluate(model, "a", 30)
     print("".join(prediction))

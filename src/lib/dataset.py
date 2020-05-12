@@ -12,8 +12,8 @@ def read_whole_file(input_path):
         return unidecode.unidecode(file.read())
 
 
-class RandomDatasetLoader(Dataset):
-    def __init__(self, input_path, validation_split=0.1):
+class CustomDatasetLoader(Dataset):
+    def __init__(self, input_path):
         self.data = read_whole_file(input_path)
         self.data_len = len(self.data)
 
@@ -28,23 +28,14 @@ class RandomDatasetLoader(Dataset):
 
         self.data_encoded = self.characters2int(self.data)
 
-    def get_random_chunk(self, length):
-        start_index = random.randint(0, self.data_len - length)
-        end_index = start_index + length
-        return self.data_encoded[start_index:end_index]
+    def __len__(self):
+        return self.data_len
 
-    def get_batch(self, sequence_size=16):
-        # Required because 1 element is removed from x and y.
-        sequence_size += 1
-
-        chunk = self.get_random_chunk(sequence_size)
-        # Ensure that random chunk has the sequence size.
-        while len(chunk) != sequence_size:
-            chunk = self.get_random_chunk(sequence_size)
+    def get_data(self):
         # Remove last character.
-        x = chunk[:-1]
+        x = self.data_encoded[:-1]
         # Remove first character.
-        y = chunk[1:]
+        y = self.data_encoded[1:]
 
         x = torch.tensor(x).cuda()
         y = torch.tensor(y).cuda()
@@ -55,17 +46,3 @@ class RandomDatasetLoader(Dataset):
 
     def int2characters(self, characters):
         return [self.int2char[c] for c in characters]
-
-    # def one_hot_encode(self, characters):
-    #     batches = characters.shape[0]
-    #     sequence_size = characters.shape[1]
-    #     encoded = np.zeros(
-    #         [batches, sequence_size, self.unique_characters_length], dtype=int,
-    #     )
-    #     for i in range(batches):
-    #         for j in range(sequence_size):
-    #             encoded[i][j][characters[i][j]] = 1
-    #     return encoded
-
-    # def one_hot_decode(self, characters):
-    #     return [np.argmax(x) for x in characters]
