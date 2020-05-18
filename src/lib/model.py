@@ -8,22 +8,18 @@ class LSTMModel(nn.Module):
         super(LSTMModel, self).__init__()
 
         self.n_layers = 3
-        self.hidden_size = 128
+        self.hidden_size = 32
 
         self.encoder = nn.Embedding(input_size, self.hidden_size)
         self.lstm = nn.LSTM(
-            self.hidden_size,
-            self.hidden_size,
-            self.n_layers,
-            batch_first=True,
-            dropout=0.2,
+            self.hidden_size, self.hidden_size, self.n_layers, batch_first=True, dropout=0.2,
         )
         self.dropout = nn.Dropout(0.4)
         self.decoder = nn.Linear(self.hidden_size, output_size)
 
     def forward(self, x, previous_hidden_states):
-        x = self.encoder(x.view(1, -1))
-        output, hidden_states = self.lstm(x.view(1, 1, -1), previous_hidden_states)
+        x = self.encoder(x)
+        output, hidden_states = self.lstm(x, previous_hidden_states)
         output = self.dropout(output)
         output = output.contiguous().view(-1, self.hidden_size)
         output = self.decoder(output)

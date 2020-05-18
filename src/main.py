@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,7 +9,9 @@ from lib.model import LSTMModel
 
 
 torch.autograd.set_detect_anomaly(True)
-dataset = CustomDatasetLoader("../dataset/alphabet.txt")
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+dataset = CustomDatasetLoader(os.path.join(dir_path, "../dataset/alphabet.txt"))
 
 model = LSTMModel(dataset.unique_characters_length, dataset.unique_characters_length)
 model.cuda()
@@ -18,7 +21,7 @@ print("Starting train process...")
 
 def train_model(n_epochs, show_loss_plot=False):
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.0006)
 
     train_loss_over_epochs = []
     validation_loss_over_epochs = []
@@ -28,10 +31,8 @@ def train_model(n_epochs, show_loss_plot=False):
         optimizer.zero_grad()
 
         x, y = dataset.get_data()
-        train_loss = 0
-        for i in range(len(dataset) - 1):
-            output, hidden_states = model(x[i], hidden_states)
-            train_loss += criterion(output, y[i].unsqueeze(0))
+        output, hidden_states = model(x.unsqueeze(0), hidden_states)
+        train_loss = criterion(output, y)
         train_loss.backward()
         optimizer.step()
 
@@ -53,5 +54,5 @@ def train_model(n_epochs, show_loss_plot=False):
         plt.show()
 
 
-train_model(n_epochs=1000, show_loss_plot=True)
+train_model(n_epochs=5000, show_loss_plot=True)
 torch.save(model, "../output/model.pytorch")
