@@ -7,7 +7,7 @@ class LSTMModel(nn.Module):
     def __init__(self, input_size, output_size, bidirectional=False):
         super(LSTMModel, self).__init__()
 
-        self.n_layers = 3
+        self.n_layers = 1
         self.hidden_size = 32
         self.bidirectional = bidirectional
 
@@ -17,10 +17,8 @@ class LSTMModel(nn.Module):
             self.hidden_size,
             self.n_layers,
             batch_first=True,
-            dropout=0.2,
             bidirectional=bidirectional,
         )
-        self.dropout = nn.Dropout(0.4)
         if bidirectional:
             self.decoder = nn.Linear(self.hidden_size * 2, output_size)
         else:
@@ -29,7 +27,6 @@ class LSTMModel(nn.Module):
     def forward(self, x, previous_hidden_states):
         x = self.encoder(x)
         output, hidden_states = self.lstm(x, previous_hidden_states)
-        output = self.dropout(output)
         if self.bidirectional:
             output = output.contiguous().view(-1, self.hidden_size * 2)
         else:

@@ -59,5 +59,5 @@ def train_model(n_epochs, show_loss_plot=False):
         plt.show()
 
 
-train_model(n_epochs=1000, show_loss_plot=True)
+train_model(n_epochs=500, show_loss_plot=True)
 torch.save(model, "../output/model.pytorch")

@@ -48,5 +48,5 @@ def evaluate(model, start_text, prediction_length):
 
 
 with torch.no_grad():
-    prediction = evaluate(model, "bc", 15)
+    prediction = evaluate(model, "b", 20)
     print("".join(prediction))
