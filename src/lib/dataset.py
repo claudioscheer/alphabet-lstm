@@ -45,6 +45,16 @@ class CustomDatasetLoader(Dataset):
         y = torch.tensor(y).cuda()
         return Variable(x), Variable(y)
 
+    def get_validation_data(self, sequence_lenght=3):
+        x = self.data_encoded[:-1]
+        y = self.data_encoded[1:]
+
+        random_index = random.randint(0, len(x) - sequence_lenght)
+
+        x = torch.tensor(x[random_index : random_index + sequence_lenght]).cuda()
+        y = torch.tensor(y[random_index : random_index + sequence_lenght]).cuda()
+        return Variable(x), Variable(y)
+
     def characters2int(self, characters):
         return [self.char2int[c] for c in characters]
 
