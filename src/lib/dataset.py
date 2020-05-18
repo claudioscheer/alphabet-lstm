@@ -31,11 +31,15 @@ class CustomDatasetLoader(Dataset):
     def __len__(self):
         return self.data_len
 
-    def get_data(self):
+    def get_data(self, bidirectional):
         # Remove last character.
         x = self.data_encoded[:-1]
         # Remove first character.
         y = self.data_encoded[1:]
+
+        if bidirectional:
+            x += x[::-1]
+            y += y[::-1]
 
         x = torch.tensor(x).cuda()
         y = torch.tensor(y).cuda()

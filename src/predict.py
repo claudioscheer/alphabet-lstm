@@ -32,14 +32,10 @@ def evaluate(model, start_text, prediction_length):
 
     current_character = start_text[-1]
 
-    print(dataset.char2int)
-
     for _ in range(size_prediction):
-        print(current_character)
         output, previous_hidden_states = model(
             current_character.unsqueeze(0).unsqueeze(0).long(), previous_hidden_states
         )
-        print(current_character)
 
         output = nn.functional.softmax(output.view(-1), dim=0).data
         max_output_index = np.argmax(output)
@@ -52,5 +48,5 @@ def evaluate(model, start_text, prediction_length):
 
 
 with torch.no_grad():
-    prediction = evaluate(model, "ab", 26)
+    prediction = evaluate(model, "bc", 15)
     print("".join(prediction))
